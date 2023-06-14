@@ -1,0 +1,58 @@
+// Author: traitorgiraffe
+// Version: .01
+
+#include <Servo.h>
+
+// Servos for movement
+Servo leftMotor;
+Servo rightMotor;
+int leftMotorPin = 10;  // Connect the left servo motor (wheel) to digital pin 10
+int rightMotorPin = 11;  // Connect the right servo motor (wheel) to digital pin 11
+
+// Servo for head rotation
+Servo headServo;
+int headServoPin = 9;  // Connect the head servo motor to digital pin 9
+
+// Ultrasonic Sensor
+int triggerPin = 5;  // Connect Trigger Pin to digital pin 5
+int echoPin = 6;     // Connect Echo Pin to digital pin 6
+long duration;
+int distance;
+
+// LED
+int ledPin = 13;  // Connect LED to digital pin 13
+
+void setup() {
+  pinMode(triggerPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(ledPin, OUTPUT);
+  
+  leftMotor.attach(leftMotorPin);
+  rightMotor.attach(rightMotorPin);
+  headServo.attach(headServoPin);
+}
+
+void loop() {
+  // Ultrasonic Sensor
+  digitalWrite(triggerPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(triggerPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(triggerPin, LOW);
+
+  duration = pulseIn(echoPin, HIGH);
+  distance = duration * 0.034 / 2;  // Speed of sound wave divided by 2 (go and back)
+
+  if (distance < 20) {  // If an object is detected within 20 cm
+    leftMotor.write(90);  // Stop the left motor
+    rightMotor.write(90);  // Stop the right motor
+    digitalWrite(ledPin, HIGH);  // Light up the LED
+    headServo.write(90);  // Rotate the head
+  }
+  else {
+    leftMotor.write(0);  // Move the left motor forward
+    rightMotor.write(180);  // Move the right motor forward (need to rotate in opposite direction)
+    digitalWrite(ledPin, LOW);  // Turn off the LED
+    headServo.write(0);  // Reset the head position
+  }
+}
