@@ -1,5 +1,5 @@
 // Author: traitorgiraffe
-// Version: .01
+// Version: .02
 
 #include <Servo.h>
 
@@ -46,13 +46,36 @@ void loop() {
   if (distance < 20) {  // If an object is detected within 20 cm
     leftMotor.write(90);  // Stop the left motor
     rightMotor.write(90);  // Stop the right motor
-    digitalWrite(ledPin, HIGH);  // Light up the LED
-    headServo.write(90);  // Rotate the head
-  }
-  else {
+
+    // Start rotating the head and scanning for obstacles
+    for (int angle = 0; angle <= 180; angle++) {
+      headServo.write(angle);
+      delay(15);
+
+      // Do another distance check
+      digitalWrite(triggerPin, LOW);
+      delayMicroseconds(2);
+      digitalWrite(triggerPin, HIGH);
+      delayMicroseconds(10);
+      digitalWrite(triggerPin, LOW);
+      
+      duration = pulseIn(echoPin, HIGH);
+      distance = duration * 0.034 / 2;
+
+      if (distance >= 20) {
+        // No obstacle detected, so break the loop and turn the droid
+        break;
+      }
+    }
+    
+    // Assuming the head and wheels turn in the same direction
     leftMotor.write(0);  // Move the left motor forward
     rightMotor.write(180);  // Move the right motor forward (need to rotate in opposite direction)
+  }
+  else {
     digitalWrite(ledPin, LOW);  // Turn off the LED
+    leftMotor.write(0);  // Move the left motor forward
+    rightMotor.write(180);  // Move the right motor forward (need to rotate in opposite direction)
     headServo.write(0);  // Reset the head position
   }
 }
